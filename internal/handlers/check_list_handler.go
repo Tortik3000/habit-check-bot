@@ -9,10 +9,13 @@ import (
 	"go.uber.org/zap"
 )
 
-func (s *Service) CheckListHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+func (h *Handler) CheckListHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	chatID := update.Message.Chat.ID
-
-	habits := s.db.GetHabits(ctx, chatID)
+	habits, err := h.db.GetAccountsHabits(ctx, chatID)
+	if err != nil {
+		h.logger.Error(err.Error())
+		return
+	}
 
 	inlineKeyboard := make([][]models.InlineKeyboardButton, 0, len(habits))
 	for _, habit := range habits {
@@ -28,19 +31,10 @@ func (s *Service) CheckListHandler(ctx context.Context, b *bot.Bot, update *mode
 		Text:        "Your check list",
 		ReplyMarkup: kb,
 	})
-	if err != nil {
-		s.logger.Error(err.Error())
-		return
-	}
-	s.logger.Info("send msg", zap.String("msg", message.Text))
 
-	_, err = b.DeleteMessage(ctx, &bot.DeleteMessageParams{
-		ChatID:    update.Message.Chat.ID,
-		MessageID: update.Message.ID,
-	})
 	if err != nil {
-		s.logger.Error(err.Error())
+		h.logger.Error(err.Error())
 		return
 	}
-	s.logger.Info("delete msg", zap.String("msg", update.Message.Text))
+	h.logger.Info("send msg", zap.String("msg", message.Text))
 }

@@ -8,7 +8,8 @@ import (
 type Storage interface {
 	SaveHabit(
 		ctx context.Context,
-		habit *models.Habit,
+		name string,
+		chatId int64,
 	) error
 
 	DeleteHabit(
@@ -21,17 +22,22 @@ type Storage interface {
 		ctx context.Context,
 		name string,
 		chatId int64,
-		mark bool,
 	) error
 
-	GetDatesHabit(
+	GetHabitsDates(
 		ctx context.Context,
 		name string,
 		chatId int64,
 	) ([]string, error)
 
-	GetHabits(
+	GetAccountsHabits(
 		ctx context.Context,
 		chatId int64,
-	) []models.Habit
+	) ([]models.Habit, error)
+
+	GetMarkDay(
+		ctx context.Context,
+		chatId int64,
+		date string,
+	) (bool, error)
 }

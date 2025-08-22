@@ -9,27 +9,29 @@ import (
 	"github.com/go-telegram/bot/models"
 )
 
-func (s *Service) CallbackHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+func (h *Handler) CallbackHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	b.AnswerCallbackQuery(ctx, &bot.AnswerCallbackQueryParams{
 		CallbackQueryID: update.CallbackQuery.ID,
 		ShowAlert:       false,
 	})
 
-	// Получить актуальный список привычек
 	callbackData := update.CallbackQuery.Data
 
-	habits := s.db.GetHabits(ctx, update.CallbackQuery.Message.Message.Chat.ID)
+	habits, err := h.db.GetAccountsHabits(ctx, update.CallbackQuery.Message.Message.Chat.ID)
+	if err != nil {
+		h.logger.Error(err.Error())
+		return
+	}
 	inlineKeyboard := make([][]models.InlineKeyboardButton, 0, len(habits))
 	for _, habit := range habits {
-
 		if habit.Name == callbackData {
-			habit.Mark = true
-			s.db.MarkHabit(ctx, habit.Name, habit.ChatId, true)
+			habit.Mark = !habit.Mark
+			h.db.MarkHabit(ctx, habit.Name, habit.ChatId)
 		}
 		inlineKeyboard = append(inlineKeyboard, m.CreateInlineKeyboard(&habit))
 	}
 
-	_, err := b.EditMessageReplyMarkup(ctx, &bot.EditMessageReplyMarkupParams{
+	_, err = b.EditMessageReplyMarkup(ctx, &bot.EditMessageReplyMarkupParams{
 		ChatID:    update.CallbackQuery.Message.Message.Chat.ID,
 		MessageID: update.CallbackQuery.Message.Message.ID,
 		ReplyMarkup: &models.InlineKeyboardMarkup{
@@ -42,9 +44,4 @@ func (s *Service) CallbackHandler(ctx context.Context, b *bot.Bot, update *model
 
 		return
 	}
-
-	b.SendMessage(ctx, &bot.SendMessageParams{
-		ChatID: update.CallbackQuery.Message.Message.Chat.ID,
-		Text:   "You selected the button: " + update.CallbackQuery.Data,
-	})
 }

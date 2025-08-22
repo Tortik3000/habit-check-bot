@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"habit-check-bot/internal/handlers"
+	"habit-check-bot/internal/time_events"
 	"os"
 	"os/signal"
 
@@ -31,9 +32,15 @@ func Run(logger *zap.Logger) {
 	storage := repository.New(dbPool, logger)
 
 	service := handlers.New(logger, storage)
+	timeEvents := time_events.New(logger, storage)
+
+	go timeEvents.StartDailyCheck(ctx)
 
 	opts := []bot.Option{
 		bot.WithDefaultHandler(service.DefaultHandler),
+		bot.WithCallbackQueryDataHandler("CAL_", bot.MatchTypePrefix, service.CalendarHandler),
+		bot.WithCallbackQueryDataHandler("IGNORE", bot.MatchTypePrefix, service.EmptyHandler),
+		bot.WithCallbackQueryDataHandler("DAY", bot.MatchTypePrefix, service.EmptyHandler),
 		bot.WithCallbackQueryDataHandler("", bot.MatchTypePrefix, service.CallbackHandler),
 	}
 
@@ -49,6 +56,10 @@ func Run(logger *zap.Logger) {
 		bot.MatchTypeExact, service.CheckListHandler)
 	b.RegisterHandler(bot.HandlerTypeMessageText, "/add",
 		bot.MatchTypePrefix, service.AddHabitHandler)
+	b.RegisterHandler(bot.HandlerTypeMessageText, "/del",
+		bot.MatchTypePrefix, service.DeleteHabitHandler)
+	b.RegisterHandler(bot.HandlerTypeMessageText, "/cal",
+		bot.MatchTypeExact, service.CalendarHandler)
 
 	b.Start(ctx)
 }

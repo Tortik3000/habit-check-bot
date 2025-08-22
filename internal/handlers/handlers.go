@@ -4,7 +4,7 @@ import (
 	"go.uber.org/zap"
 )
 
-type Service struct {
+type Handler struct {
 	logger *zap.Logger
 	db     Storage
 }
@@ -12,8 +12,8 @@ type Service struct {
 func New(
 	logger *zap.Logger,
 	db Storage,
-) *Service {
-	return &Service{
+) *Handler {
+	return &Handler{
 		logger: logger,
 		db:     db,
 	}
