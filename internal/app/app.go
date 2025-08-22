@@ -60,6 +60,8 @@ func Run(logger *zap.Logger) {
 		bot.MatchTypePrefix, service.DeleteHabitHandler)
 	b.RegisterHandler(bot.HandlerTypeMessageText, "/cal",
 		bot.MatchTypeExact, service.CalendarHandler)
+	b.RegisterHandler(bot.HandlerTypeMessageText, "/help",
+		bot.MatchTypeExact, service.HelpHandler)
 
 	b.Start(ctx)
 }
