@@ -7,7 +7,7 @@ import (
 	"os"
 	"os/signal"
 
-	bot "github.com/go-telegram/bot"
+	"github.com/go-telegram/bot"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 

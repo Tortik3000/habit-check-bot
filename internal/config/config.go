@@ -10,7 +10,7 @@ import (
 
 type Config struct {
 	TelegramBotToken string `hcl:"telegram_bot_token" env:"TELEGRAM_BOT_TOKEN" required:"true"`
-	DatabaseDSN      string `hcl:"database_dsn" env:"DATABASE_DSN" default:"postgres://ed:1234567@localhost:5432/bot?sslmode=disable"`
+	DatabaseDSN      string `hcl:"database_dsn" env:"DATABASE_DSN" default:"postgres://ed:1234567@postgres:5432/bot?sslmode=disable"`
 }
 
 var (
