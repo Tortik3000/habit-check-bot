@@ -20,9 +20,8 @@ func Run(logger *zap.Logger) {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	cfg := config.Get()
-
-	dbPool, err := pgxpool.New(ctx, cfg.DatabaseDSN)
+	cfg := config.New()
+	dbPool, err := pgxpool.New(ctx, cfg.PG.URL)
 	if err != nil {
 		logger.Error("can not create pgxpool", zap.Error(err))
 		return
@@ -44,7 +43,7 @@ func Run(logger *zap.Logger) {
 		bot.WithCallbackQueryDataHandler("", bot.MatchTypePrefix, service.CallbackHandler),
 	}
 
-	b, err := bot.New(cfg.TelegramBotToken, opts...)
+	b, err := bot.New(cfg.TG.Token, opts...)
 	if err != nil {
 		logger.Error(err.Error())
 		return

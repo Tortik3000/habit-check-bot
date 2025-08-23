@@ -1,19 +1,20 @@
 package calendar
 
 import (
-	"context"
 	"fmt"
 	"time"
 
 	"github.com/go-telegram/bot/models"
 )
 
-func BuildCalendarKeyboard(month, year int, chatId int64, db Storage) *models.InlineKeyboardMarkup {
+func BuildCalendarKeyboard(month, year int, marks []bool) *models.InlineKeyboardMarkup {
 	keyboard := [][]models.InlineKeyboardButton{buildCalendarHeader()}
+
 	firstDay := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.UTC)
 	weekday := getFirstWeekday(firstDay)
-	daysInMonth := getDaysInMonth(year, month)
-	rows := buildCalendarRows(month, year, chatId, weekday, daysInMonth, db)
+
+	rows := buildCalendarRows(month, year, weekday, marks)
+
 	keyboard = append(keyboard, rows...)
 	keyboard = append(keyboard, buildMonthNavigation(month, year))
 	return &models.InlineKeyboardMarkup{InlineKeyboard: keyboard}
@@ -39,18 +40,15 @@ func getFirstWeekday(firstDay time.Time) int {
 	return weekday
 }
 
-func getDaysInMonth(year, month int) int {
-	return time.Date(year, time.Month(month+1), 0, 0, 0, 0, 0, time.UTC).Day()
-}
-
-func buildCalendarRows(month, year int, chatId int64, weekday, daysInMonth int, db Storage) [][]models.InlineKeyboardButton {
+func buildCalendarRows(month, year int, weekday int, marks []bool) [][]models.InlineKeyboardButton {
 	var rows [][]models.InlineKeyboardButton
 	row := make([]models.InlineKeyboardButton, 0, 7)
 	for i := 1; i < weekday; i++ {
 		row = append(row, models.InlineKeyboardButton{Text: "-", CallbackData: "IGNORE"})
 	}
-	for day := 1; day <= daysInMonth; day++ {
-		row = append(row, buildDayButton(day, month, year, chatId, db))
+
+	for day, mark := range marks {
+		row = append(row, buildDayButton(day+1, month, year, mark))
 		if len(row) == 7 {
 			rows = append(rows, row)
 			row = []models.InlineKeyboardButton{}
@@ -65,12 +63,9 @@ func buildCalendarRows(month, year int, chatId int64, weekday, daysInMonth int, 
 	return rows
 }
 
-func buildDayButton(day, month, year int, chatId int64, db Storage) models.InlineKeyboardButton {
-	date := fmt.Sprintf("%d-%02d-%02d", year, month, day)
-
-	mark, err := db.GetMarkDay(context.Background(), chatId, date)
+func buildDayButton(day, month, year int, mark bool) models.InlineKeyboardButton {
 	var btnText string
-	if err == nil && mark {
+	if mark {
 		btnText = fmt.Sprintf("%d 🟢", day)
 	} else {
 		btnText = fmt.Sprintf("%d", day)

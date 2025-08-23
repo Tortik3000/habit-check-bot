@@ -5,6 +5,18 @@ import (
 	"time"
 )
 
+func (t *TimeEvents) StartDailyCheck(ctx context.Context) {
+	for {
+		now := time.Now()
+
+		next := time.Date(now.Year(), now.Month(), now.Day()+1, 0, 0, 0, 0, now.Location())
+		duration := next.Sub(now)
+		time.Sleep(duration)
+
+		t.checkHabitsAndMarkCalendar(ctx)
+	}
+}
+
 func (t *TimeEvents) checkHabitsAndMarkCalendar(ctx context.Context) {
 	today := time.Now().Add(-24 * time.Hour).Format("2006-01-02")
 

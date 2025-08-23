@@ -1,37 +1,49 @@
 package config
 
 import (
-	"log"
-	"sync"
-
-	"github.com/cristalhq/aconfig"
-	"github.com/cristalhq/aconfig/aconfighcl"
+	"fmt"
+	"net"
+	"os"
 )
 
-type Config struct {
-	TelegramBotToken string `hcl:"telegram_bot_token" env:"TELEGRAM_BOT_TOKEN" required:"true"`
-	DatabaseDSN      string `hcl:"database_dsn" env:"DATABASE_DSN" default:"postgres://ed:1234567@postgres:5432/bot?sslmode=disable"`
-}
+type (
+	Config struct {
+		PG
+		TG
+	}
 
-var (
-	cfg  Config
-	once sync.Once
+	PG struct {
+		URL      string
+		Host     string `env:"POSTGRES_HOST"`
+		Port     string `env:"POSTGRES_PORT"`
+		DB       string `env:"POSTGRES_DB"`
+		User     string `env:"POSTGRES_USER"`
+		Password string `env:"POSTGRES_PASSWORD"`
+	}
+
+	TG struct {
+		Token string `env:"TELEGRAM_BOT_TOKEN"`
+	}
 )
 
-func Get() Config {
-	once.Do(func() {
-		loader := aconfig.LoaderFor(&cfg, aconfig.Config{
-			EnvPrefix: "HCB",
-			Files:     []string{"./config.hcl", "./config.local.hcl", "$HOME/.config/habit-check-bot/config.hcl"},
-			FileDecoders: map[string]aconfig.FileDecoder{
-				".hcl": aconfighcl.New(),
-			},
-		})
+func New() *Config {
+	cfg := &Config{}
 
-		if err := loader.Load(); err != nil {
-			log.Printf("[ERROR] failed to load config: %v", err)
-		}
-	})
+	cfg.TG.Token = os.Getenv("TELEGRAM_BOT_TOKEN")
+
+	cfg.PG.Host = os.Getenv("POSTGRES_HOST")
+	cfg.PG.Port = os.Getenv("POSTGRES_PORT")
+	cfg.PG.DB = os.Getenv("POSTGRES_DB")
+	cfg.PG.User = os.Getenv("POSTGRES_USER")
+	cfg.PG.Password = os.Getenv("POSTGRES_PASSWORD")
+
+	hostPort := net.JoinHostPort(cfg.PG.Host, cfg.PG.Port)
+	cfg.PG.URL = fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable",
+		cfg.PG.User,
+		cfg.PG.Password,
+		hostPort,
+		cfg.PG.DB,
+	)
 
 	return cfg
 }
