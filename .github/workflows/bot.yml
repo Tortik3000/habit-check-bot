@@ -41,5 +41,4 @@ jobs:
           playbook: deploy.yml
           directory: .
           key: ${{secrets.SSH_PRIV_KEY}}
-          inventory: inventories/bot.ini
           options: --verbose --vault-password-file .vault_pass.txt
