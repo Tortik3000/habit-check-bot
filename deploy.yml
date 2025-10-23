@@ -2,37 +2,31 @@
 - name: Deploy Telegram Bot with PostgreSQL
   hosts: all
   gather_facts: true
+  vars_files:
+    - group_vars/vars.yml
   vars:
     app_path: /opt/habit-check-bot
     docker_compose_file: "{{ app_path }}/docker-compose.yml"
     env_file: "{{ app_path }}/.env"
-  
+    app_user: "botadmin"
+
   tasks:
+    - name: Create application user
+      user:
+        name: "{{ app_user }}"
+        shell: /bin/bash
+        home: "/home/{{ app_user }}"
+        create_home: yes
+        state: present
+      become: yes
+
     - name: Create application directory
       file:
         path: "{{ app_path }}"
         state: directory
-        owner: "botadmin"
-        group: "botadmin"
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
         mode: 0775
-      become: yes
-
-    - name: Copy docker-compose.yml
-      copy:
-        src: "docker-compose.yml"
-        dest: "{{ docker_compose_file }}"
-        owner: "botadmin"
-        group: "botadmin"
-        mode: 0644
-      become: yes
-
-    - name: Create .env file with environment variables
-      template:
-        src: env.j2
-        dest: "{{ env_file }}"
-        owner: "botadmin"
-        group: "botadmin"
-        mode: 0600
       become: yes
 
     - name: Ensure Docker is installed
@@ -50,7 +44,7 @@
 
     - name: Add botadmin user to docker group
       user:
-        name: botadmin
+        name: "{{ app_user }}"
         groups: docker
         append: yes
       become: yes
@@ -62,12 +56,30 @@
         enabled: yes
       become: yes
 
+    - name: Copy docker-compose.yml
+      copy:
+        src: "docker-compose.yml"
+        dest: "{{ docker_compose_file }}"
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        mode: 0644
+      become: yes
+
+    - name: Create .env file with environment variables
+      template:
+        src: env.j2
+        dest: "{{ env_file }}"
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        mode: 0600
+      become: yes
+
     - name: Pull latest images
       community.docker.docker_compose_v2:
         project_src: "{{ app_path }}"
         files:
-            - "{{ docker_compose_file }}"
-        pull: yes
+          - "{{ docker_compose_file }}"
+        pull: always
       environment:
         TELEGRAM_BOT_TOKEN: "{{ TELEGRAM_BOT_TOKEN }}"
         POSTGRES_DB: "{{ POSTGRES_DB }}"
