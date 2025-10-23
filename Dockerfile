@@ -1,11 +1,15 @@
 FROM golang:1.21-alpine AS builder
 WORKDIR /app
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o habit-bot ./cmd/habit-bot
+
+RUN find . -name "*.go" -type f
+RUN ls -la cmd/bot/
+
+RUN make build
 
 FROM alpine:latest
 #RUN adduser -D -s /bin/sh appuser
 WORKDIR /app
-COPY --from=builder /app/habit-bot .
+COPY --from=builder /app/bin/bot .
 #USER appuser
-CMD ["./bot"]
+CMD ["./bin/bot"]

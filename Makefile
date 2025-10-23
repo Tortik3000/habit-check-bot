@@ -19,4 +19,4 @@ lint:
 
 build:
 	go mod tidy
-	go build -o ./bin/habit-bot ./cmd/habit-bot/
+	go build -o ./bin/bot ./cmd/bot/

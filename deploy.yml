@@ -3,7 +3,7 @@
   hosts: all
   gather_facts: true
   vars:
-    app_path: /opt/habit-check-habit-bot
+    app_path: /opt/habit-check-bot
     docker_compose_file: "{{ app_path }}/docker-compose.yml"
     env_file: "{{ app_path }}/.env"
   
