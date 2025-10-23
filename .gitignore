@@ -1,3 +1,4 @@
-
+/bin
 *.hcl
 .idea
+.vault_pass.txt

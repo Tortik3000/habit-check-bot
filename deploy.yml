@@ -35,12 +35,21 @@
         state: present
       become: yes
 
-    - name: Ensure Docker Compose is installed
-      get_url:
-        url: https://github.com/docker/compose/releases/download/v2.24.0/docker-compose-linux-x86_64
-        dest: /usr/local/bin/docker-compose
+    - name: Create plugins directory if not exists
+      file:
+        path: /usr/libexec/docker/cli-plugins
+        state: directory
         mode: 0755
       become: yes
+
+    - name: Install Docker Compose as plugin
+      get_url:
+        url: https://github.com/docker/compose/releases/download/v2.24.0/docker-compose-linux-x86_64
+        dest: /usr/libexec/docker/cli-plugins/docker-compose
+        mode: 0755
+      become: yes
+
+
 
     - name: Add botadmin user to docker group
       user:
@@ -55,6 +64,20 @@
         state: started
         enabled: yes
       become: yes
+
+#    - name: Reload user group membership
+#      shell: "newgrp docker"
+#      become_user: "{{ app_user }}"
+
+#    - name: Reboot server to apply group changes
+#      reboot:
+#        msg: "Rebooting to apply Docker group changes"
+#        connect_timeout: 5
+#        reboot_timeout: 300
+#        pre_reboot_delay: 0
+#        post_reboot_delay: 30
+#        test_command: whoami
+#      become: yes
 
     - name: Copy docker-compose.yml
       copy:
@@ -86,6 +109,7 @@
         POSTGRES_USER: "{{ POSTGRES_USER }}"
         POSTGRES_PASSWORD: "{{ POSTGRES_PASSWORD }}"
         POSTGRES_PORT: "{{ POSTGRES_PORT }}"
+      become: yes
 
     - name: Deploy services with Docker Compose
       community.docker.docker_compose_v2:
@@ -93,11 +117,13 @@
         files:
           - "{{ docker_compose_file }}"
         state: present
-        restarted: yes
         recreate: always
+        build: always
+        remove_orphans: yes
       environment:
         TELEGRAM_BOT_TOKEN: "{{ TELEGRAM_BOT_TOKEN }}"
         POSTGRES_DB: "{{ POSTGRES_DB }}"
         POSTGRES_USER: "{{ POSTGRES_USER }}"
         POSTGRES_PASSWORD: "{{ POSTGRES_PASSWORD }}"
         POSTGRES_PORT: "{{ POSTGRES_PORT }}"
+      become: yes

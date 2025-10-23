@@ -24,19 +24,14 @@ jobs:
           push: true
           tags: eduard3000/habit-check-bot:latest
 
+      - name: Create vault password file
+        run: echo '${{ secrets.ANSIBLE_VAULT_PASSWORD }}' > .vault_pass.txt
+
       - name: Deploy HabitCheckBot
         uses: dawidd6/action-ansible-playbook@v2
         with:
           playbook: deploy.yml
           directory: .
           key: ${{secrets.SSH_PRIV_KEY}}
-          inventory: |
-            [all]
-            158.160.20.15 ansible_ssh_port=22 ansible_ssh_user=tortik ansible_become_user=root ansible_become_password=
-          options: |
-            --extra-vars "TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
-                          POSTGRES_DB=${{ secrets.POSTGRES_DB }}
-                          POSTGRES_USER=${{ secrets.POSTGRES_USER }}
-                          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
-                          POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}"
-            --verbose
+          inventory: inventories/bot.ini
+          options: --verbose --vault-password-file .vault_pass.txt
