@@ -27,6 +27,14 @@ jobs:
       - name: Create vault password file
         run: echo '${{ secrets.ANSIBLE_VAULT_PASSWORD }}' > .vault_pass.txt
 
+      - name: Create ansible.cfg
+        run: |
+          cat > ansible.cfg << 'EOF'
+          [defaults]
+          inventory = inventories/bot.ini
+          host_key_checking = False
+          EOF
+
       - name: Deploy HabitCheckBot
         uses: dawidd6/action-ansible-playbook@v2
         with:
