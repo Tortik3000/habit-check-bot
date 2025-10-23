@@ -25,7 +25,7 @@ jobs:
           tags: eduard3000/habit-check-bot:latest
 
       - name: Create vault password file
-        run: echo '${{ secrets.ANSIBLE_VAULT_PASSWORD }}' > .vault_pass.txt
+        run: echo '${{ secrets.ANSIBLE_VAULT_PASSWORD }}' > bot_playbook/.vault_pass.txt
 
       - name: Deploy HabitCheckBot
         uses: dawidd6/action-ansible-playbook@v2
