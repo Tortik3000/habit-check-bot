@@ -27,11 +27,11 @@ jobs:
         uses: dawidd6/action-ansible-playbook@v2
         with:
           playbook: deploy.yml
-          directory: habit-check-bot/
+          directory: .
           key: ${{secrets.SSH_PRIV_KEY}}
           inventory: |
             [all]
-            89.169.166.77 ansible_ssh_port=22 ansible_ssh_user=tortik ansible_become_user=root ansible_become_password=
+            158.160.20.15 ansible_ssh_port=22 ansible_ssh_user=tortik ansible_become_user=root ansible_become_password=
           options: |
             --extra-vars "TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
                           POSTGRES_DB=${{ secrets.POSTGRES_DB }}
