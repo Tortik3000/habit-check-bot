@@ -7,7 +7,6 @@
   vars:
     app_path: /opt/habit-check-bot
     docker_compose_file: "{{ app_path }}/docker-compose.yml"
-    env_file: "{{ app_path }}/.env"
     app_user: "botadmin"
 
   tasks:
@@ -49,8 +48,6 @@
         mode: 0755
       become: yes
 
-
-
     - name: Add botadmin user to docker group
       user:
         name: "{{ app_user }}"
@@ -65,20 +62,6 @@
         enabled: yes
       become: yes
 
-#    - name: Reload user group membership
-#      shell: "newgrp docker"
-#      become_user: "{{ app_user }}"
-
-#    - name: Reboot server to apply group changes
-#      reboot:
-#        msg: "Rebooting to apply Docker group changes"
-#        connect_timeout: 5
-#        reboot_timeout: 300
-#        pre_reboot_delay: 0
-#        post_reboot_delay: 30
-#        test_command: whoami
-#      become: yes
-
     - name: Copy docker-compose.yml
       copy:
         src: "docker-compose.yml"
@@ -86,15 +69,6 @@
         owner: "{{ app_user }}"
         group: "{{ app_user }}"
         mode: 0644
-      become: yes
-
-    - name: Create .env file with environment variables
-      template:
-        src: env.j2
-        dest: "{{ env_file }}"
-        owner: "{{ app_user }}"
-        group: "{{ app_user }}"
-        mode: 0600
       become: yes
 
     - name: Pull latest images

@@ -1,4 +1,4 @@
 /bin
 *.hcl
 .idea
-.vault_pass.txt
+bot_playbook/.vault_pass.txt
