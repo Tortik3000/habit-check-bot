@@ -6,7 +6,7 @@
     - group_vars/vars.yml
   vars:
     app_path: /opt/habit-check-bot
-    docker_compose_file: "{{ app_path }}/docker-compose.yml"
+    docker_compose_file: "{{ app_path }}/../docker-compose.yml"
     app_user: "botadmin"
 
   tasks:
