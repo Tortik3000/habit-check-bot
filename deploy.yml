@@ -63,7 +63,7 @@
       become: yes
 
     - name: Pull latest images
-      community.docker.docker_compose:
+      community.docker.docker_compose_v2:
         project_src: "{{ app_path }}"
         files:
             - "{{ docker_compose_file }}"
@@ -76,7 +76,7 @@
         POSTGRES_PORT: "{{ POSTGRES_PORT }}"
 
     - name: Deploy services with Docker Compose
-      community.docker.docker_compose:
+      community.docker.docker_compose_v2:
         project_src: "{{ app_path }}"
         files:
           - "{{ docker_compose_file }}"
