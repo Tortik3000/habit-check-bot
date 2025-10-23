@@ -7,6 +7,7 @@
   vars:
     app_path: /opt/habit-check-bot
     docker_compose_file: "{{ app_path }}/docker-compose.yml"
+    docker_compose_src: "../docker-compose.yml"
     app_user: "botadmin"
 
   tasks:
@@ -62,9 +63,12 @@
         enabled: yes
       become: yes
 
+    - name: Reset Connection for renew user group
+      ansible.builtin.meta: reset_connection
+
     - name: Copy docker-compose.yml
       copy:
-        src: "docker-compose.yml"
+        src: "{{ docker_compose_src }}"
         dest: "{{ docker_compose_file }}"
         owner: "{{ app_user }}"
         group: "{{ app_user }}"
