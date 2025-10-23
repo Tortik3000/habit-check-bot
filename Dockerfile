@@ -1,11 +1,8 @@
-FROM golang:1.21-alpine AS builder
+FROM golang:1.25-alpine AS builder
 WORKDIR /app
 COPY . .
 
-RUN find . -name "*.go" -type f
-RUN ls -la cmd/bot/
-
-RUN make build
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o bot ./cmd/bot
 
 FROM alpine:latest
 #RUN adduser -D -s /bin/sh appuser
