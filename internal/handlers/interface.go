@@ -40,4 +40,11 @@ type Storage interface {
 		chatId int64,
 		date string,
 	) (bool, error)
+
+	MarkCalendarDay(
+		ctx context.Context,
+		chatId int64,
+		date string,
+		mark bool,
+	) error
 }

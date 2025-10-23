@@ -3,7 +3,6 @@ package app
 import (
 	"context"
 	"habit-check-bot/internal/handlers"
-	"habit-check-bot/internal/time_events"
 	"os"
 	"os/signal"
 
@@ -31,9 +30,6 @@ func Run(logger *zap.Logger) {
 	storage := repository.New(dbPool, logger)
 
 	service := handlers.New(logger, storage)
-	timeEvents := time_events.New(logger, storage)
-
-	go timeEvents.StartDailyCheck(ctx)
 
 	opts := []bot.Option{
 		bot.WithDefaultHandler(service.DefaultHandler),
