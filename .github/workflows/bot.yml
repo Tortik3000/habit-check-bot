@@ -20,7 +20,6 @@ jobs:
       - name: Publish to Registry
         uses: docker/build-push-action@v2
         with:
-          context: habit-check-bot/
           push: true
           tags: eduard3000/habit-check-bot:latest
 
