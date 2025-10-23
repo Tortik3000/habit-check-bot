@@ -21,13 +21,13 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: eduard3000/habit-check-bot:latest
+          tags: eduard3000/habit-check-habit-bot:latest
 
       - name: Deploy HabitCheckBot
         uses: dawidd6/action-ansible-playbook@v2
         with:
           playbook: deploy.yml
-          directory: habit-check-bot/
+          directory: habit-check-habit-bot/
           key: ${{secrets.SSH_PRIV_KEY}}
           inventory: |
             [all]
