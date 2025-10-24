@@ -57,7 +57,7 @@ func getDaysWithMark(month, year int, chatId int64, db Storage) []bool {
 	for day := range marks {
 		date := fmt.Sprintf("%d-%02d-%02d", year, month, day+1)
 		mark, err := db.GetMarkDay(context.Background(), chatId, date)
-		marks[day] = (err == nil && mark)
+		marks[day] = err == nil && mark
 	}
 	return marks
 }

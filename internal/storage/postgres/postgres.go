@@ -144,9 +144,9 @@ LEFT JOIN time_done td
   ON h.name = td.name
   AND h.chatId = td.chatId
   AND td.created_at = CURRENT_DATE
-WHERE td.name IS NULL and h.chatId = $1`
+WHERE td.name IS NULL`
 
-	rows, err = p.db.Query(ctx, getNotTodayMarkHabits, chatId)
+	rows, err = p.db.Query(ctx, getNotTodayMarkHabits)
 	if err != nil {
 		p.logger.Error("failed to get habits", zap.Error(err))
 		return []models.Habit{}, err
@@ -270,15 +270,24 @@ func (p *postgresRepository) MarkCalendarDay(
 	date string,
 	mark bool,
 ) error {
-	const insertIntoCalendar = `
-		INSERT INTO calendar (chatId, date, mark)
-		VALUES ($1, $2, $3)
-	`
-	_, err := p.db.Exec(ctx, insertIntoCalendar, chatId, date, mark)
+	const upsertCalendarDay = `
+        INSERT INTO calendar (chatId, date, mark)
+        VALUES ($1, $2, $3)
+        ON CONFLICT (chatId, date) 
+        DO UPDATE SET mark = EXCLUDED.mark
+    `
+
+	_, err := p.db.Exec(ctx, upsertCalendarDay, chatId, date, mark)
 	if err != nil {
-		p.logger.Error("failed to mark calendar day", zap.Error(err))
+		p.logger.Error("failed to upsert calendar day",
+			zap.Error(err),
+			zap.Int64("chatId", chatId),
+			zap.String("date", date),
+			zap.Bool("mark", mark),
+		)
 		return err
 	}
+
 	return nil
 }
 

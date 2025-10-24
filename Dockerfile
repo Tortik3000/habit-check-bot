@@ -1,6 +1,10 @@
-FROM golang:latest
-
-WORKDIR /application
+FROM golang:1.25-alpine AS builder
+WORKDIR /app
 COPY . .
-RUN GOOS=linux GOARCH=amd64 make build
-CMD ["./bin/bot"]
+
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o bot ./cmd/bot
+
+FROM alpine:latest
+WORKDIR /app
+COPY --from=builder /app/bot .
+CMD ["./bot"]

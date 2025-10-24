@@ -1,3 +1,4 @@
-.env
+/bin
 *.hcl
 .idea
+bot_playbook/.vault_pass.txt

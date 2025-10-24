@@ -1,0 +1,107 @@
+---
+- name: Deploy Telegram Bot with PostgreSQL
+  hosts: all
+  gather_facts: true
+  vars_files:
+    - group_vars/vars.yml
+  vars:
+    app_path: /opt/habit-check-bot
+    docker_compose_file: "{{ app_path }}/docker-compose.yml"
+    docker_compose_src: "../docker-compose.yml"
+    app_user: "botadmin"
+
+  tasks:
+    - name: Create application user
+      user:
+        name: "{{ app_user }}"
+        shell: /bin/bash
+        home: "/home/{{ app_user }}"
+        create_home: yes
+        state: present
+      become: yes
+
+    - name: Create application directory
+      file:
+        path: "{{ app_path }}"
+        state: directory
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        mode: 0775
+      become: yes
+
+    - name: Ensure Docker is installed
+      package:
+        name: docker.io
+        state: present
+      become: yes
+
+    - name: Create plugins directory if not exists
+      file:
+        path: /usr/libexec/docker/cli-plugins
+        state: directory
+        mode: 0755
+      become: yes
+
+    - name: Install Docker Compose as plugin
+      get_url:
+        url: https://github.com/docker/compose/releases/download/v2.24.0/docker-compose-linux-x86_64
+        dest: /usr/libexec/docker/cli-plugins/docker-compose
+        mode: 0755
+      become: yes
+
+    - name: Add botadmin user to docker group
+      user:
+        name: "{{ app_user }}"
+        groups: docker
+        append: yes
+      become: yes
+
+    - name: Start Docker service
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+      become: yes
+
+    - name: Reset Connection for renew user group
+      ansible.builtin.meta: reset_connection
+
+    - name: Copy docker-compose.yml
+      copy:
+        src: "{{ docker_compose_src }}"
+        dest: "{{ docker_compose_file }}"
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        mode: 0644
+      become: yes
+
+    - name: Pull latest images
+      community.docker.docker_compose_v2:
+        project_src: "{{ app_path }}"
+        files:
+          - "{{ docker_compose_file }}"
+        pull: always
+      environment:
+        TELEGRAM_BOT_TOKEN: "{{ TELEGRAM_BOT_TOKEN }}"
+        POSTGRES_DB: "{{ POSTGRES_DB }}"
+        POSTGRES_USER: "{{ POSTGRES_USER }}"
+        POSTGRES_PASSWORD: "{{ POSTGRES_PASSWORD }}"
+        POSTGRES_PORT: "{{ POSTGRES_PORT }}"
+      become: yes
+
+    - name: Deploy services with Docker Compose
+      community.docker.docker_compose_v2:
+        project_src: "{{ app_path }}"
+        files:
+          - "{{ docker_compose_file }}"
+        state: present
+        recreate: always
+        build: always
+        remove_orphans: yes
+      environment:
+        TELEGRAM_BOT_TOKEN: "{{ TELEGRAM_BOT_TOKEN }}"
+        POSTGRES_DB: "{{ POSTGRES_DB }}"
+        POSTGRES_USER: "{{ POSTGRES_USER }}"
+        POSTGRES_PASSWORD: "{{ POSTGRES_PASSWORD }}"
+        POSTGRES_PORT: "{{ POSTGRES_PORT }}"
+      become: yes

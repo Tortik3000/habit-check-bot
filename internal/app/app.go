@@ -3,11 +3,11 @@ package app
 import (
 	"context"
 	"habit-check-bot/internal/handlers"
-	"habit-check-bot/internal/time_events"
 	"os"
 	"os/signal"
 
 	"github.com/go-telegram/bot"
+	"github.com/go-telegram/bot/models"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 
@@ -31,9 +31,6 @@ func Run(logger *zap.Logger) {
 	storage := repository.New(dbPool, logger)
 
 	service := handlers.New(logger, storage)
-	timeEvents := time_events.New(logger, storage)
-
-	go timeEvents.StartDailyCheck(ctx)
 
 	opts := []bot.Option{
 		bot.WithDefaultHandler(service.DefaultHandler),
@@ -47,6 +44,21 @@ func Run(logger *zap.Logger) {
 	if err != nil {
 		logger.Error(err.Error())
 		return
+	}
+
+	commands := []models.BotCommand{
+		{Command: "get", Description: "Показать список привычек"},
+		{Command: "add", Description: "Добавить привычку"},
+		{Command: "del", Description: "Удалить привычку"},
+		{Command: "cal", Description: "Открыть календарь"},
+		{Command: "help", Description: "Помощь и список команд"},
+	}
+
+	_, err = b.SetMyCommands(ctx, &bot.SetMyCommandsParams{
+		Commands: commands,
+	})
+	if err != nil {
+		logger.Error("failed to set bot commands", zap.Error(err))
 	}
 
 	b.RegisterHandler(bot.HandlerTypeMessageText, "/start",
