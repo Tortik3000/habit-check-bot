@@ -16,7 +16,7 @@ func (h *Handler) DeleteHabitHandler(ctx context.Context, b *bot.Bot, update *mo
 	if len(parts) < 2 || strings.TrimSpace(parts[1]) == "" {
 		b.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: chatId,
-			Text:   "Please provide a habit name: /add {habit_name}",
+			Text:   "Please provide a habit name: /del {habit_name}",
 		})
 		return
 	}

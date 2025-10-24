@@ -12,6 +12,7 @@ import (
 func (h *Handler) AddHabitHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	text := update.Message.Text
 	chatId := update.Message.Chat.ID
+
 	parts := strings.SplitN(text, " ", 2)
 	if len(parts) < 2 || strings.TrimSpace(parts[1]) == "" {
 		b.SendMessage(ctx, &bot.SendMessageParams{

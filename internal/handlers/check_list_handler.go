@@ -10,6 +10,7 @@ import (
 )
 
 func (h *Handler) CheckListHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+	h.logger.Info("started GetAccountsHabits")
 	chatID := update.Message.Chat.ID
 	habits, err := h.db.GetAccountsHabits(ctx, chatID)
 	if err != nil {

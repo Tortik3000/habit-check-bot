@@ -4,6 +4,7 @@ services:
   bot:
     image: eduard3000/habit-check-bot:latest
     restart: always
+    pull_policy: always
     depends_on:
       postgres:
         condition: service_healthy

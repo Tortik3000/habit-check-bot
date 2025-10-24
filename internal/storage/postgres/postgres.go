@@ -144,9 +144,9 @@ LEFT JOIN time_done td
   ON h.name = td.name
   AND h.chatId = td.chatId
   AND td.created_at = CURRENT_DATE
-WHERE td.name IS NULL and h.chatId = $1`
+WHERE td.name IS NULL`
 
-	rows, err = p.db.Query(ctx, getNotTodayMarkHabits, chatId)
+	rows, err = p.db.Query(ctx, getNotTodayMarkHabits)
 	if err != nil {
 		p.logger.Error("failed to get habits", zap.Error(err))
 		return []models.Habit{}, err
@@ -270,39 +270,21 @@ func (p *postgresRepository) MarkCalendarDay(
 	date string,
 	mark bool,
 ) error {
-	tx, err := p.db.Begin(ctx)
-	if err != nil {
-		return err
-	}
-	defer func(ctx2 context.Context) {
-		_ = tx.Rollback(ctx2)
-	}(ctx)
+	const upsertCalendarDay = `
+        INSERT INTO calendar (chatId, date, mark)
+        VALUES ($1, $2, $3)
+        ON CONFLICT (chatId, date) 
+        DO UPDATE SET mark = EXCLUDED.mark
+    `
 
-	const deleteFromCalendarDay = `
-		DELETE FROM calendar
-		WHERE chatId = $1 AND date = $2 and mark = $3
-	`
-	cmd, err := tx.Exec(ctx, deleteFromCalendarDay, chatId, date, mark)
+	_, err := p.db.Exec(ctx, upsertCalendarDay, chatId, date, mark)
 	if err != nil {
-		p.logger.Error("failed to update mark", zap.Error(err))
-		return err
-	}
-
-	if cmd.RowsAffected() == 0 {
-		const insertIntoCalendarDay = `
-		INSERT INTO calendar (chatId, date, mark)
-		VALUES ($1, $2, $3)
-	`
-		_, err = tx.Exec(ctx, insertIntoCalendarDay, chatId, date, mark)
-		if err != nil {
-			p.logger.Error("failed to insert date", zap.Error(err))
-			return err
-		}
-	}
-
-	err = tx.Commit(ctx)
-	if err != nil {
-		p.logger.Error("failed to commit tx", zap.Error(err))
+		p.logger.Error("failed to upsert calendar day",
+			zap.Error(err),
+			zap.Int64("chatId", chatId),
+			zap.String("date", date),
+			zap.Bool("mark", mark),
+		)
 		return err
 	}
 
