@@ -54,7 +54,6 @@ func (h *Handler) CallbackHandler(ctx context.Context, b *bot.Bot, update *model
 
 	if err != nil {
 		log.Println(err)
-
 		return
 	}
 }

@@ -270,15 +270,42 @@ func (p *postgresRepository) MarkCalendarDay(
 	date string,
 	mark bool,
 ) error {
-	const insertIntoCalendar = `
+	tx, err := p.db.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer func(ctx2 context.Context) {
+		_ = tx.Rollback(ctx2)
+	}(ctx)
+
+	const deleteFromCalendarDay = `
+		DELETE FROM calendar
+		WHERE chatId = $1 AND date = $2 and mark = $3
+	`
+	cmd, err := tx.Exec(ctx, deleteFromCalendarDay, chatId, date, mark)
+	if err != nil {
+		p.logger.Error("failed to update mark", zap.Error(err))
+		return err
+	}
+
+	if cmd.RowsAffected() == 0 {
+		const insertIntoCalendarDay = `
 		INSERT INTO calendar (chatId, date, mark)
 		VALUES ($1, $2, $3)
 	`
-	_, err := p.db.Exec(ctx, insertIntoCalendar, chatId, date, mark)
+		_, err = tx.Exec(ctx, insertIntoCalendarDay, chatId, date, mark)
+		if err != nil {
+			p.logger.Error("failed to insert date", zap.Error(err))
+			return err
+		}
+	}
+
+	err = tx.Commit(ctx)
 	if err != nil {
-		p.logger.Error("failed to mark calendar day", zap.Error(err))
+		p.logger.Error("failed to commit tx", zap.Error(err))
 		return err
 	}
+
 	return nil
 }
 
