@@ -1,4 +1,4 @@
-name: Build and Publish Docker Images
+name: Pipeline for HabitCheckBot
 
 on:
   push:
@@ -24,17 +24,6 @@ jobs:
         with:
           push: true
           tags: eduard3000/habit-check-bot:latest
-
-      - name: Create vault password file
-        run: echo '${{ secrets.ANSIBLE_VAULT_PASSWORD }}' > bot_playbook/.vault_pass.txt
-
-      - name: Deploy HabitCheckBot
-        uses: dawidd6/action-ansible-playbook@v2
-        with:
-          playbook: bot_playbook/deploy.yml
-          directory: .
-          key: ${{secrets.SSH_PRIV_KEY}}
-          options: --verbose
 
   deploy:
     name: Deploy with Ansible
