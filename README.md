@@ -19,16 +19,16 @@ Telegram-бот для трекинга и анализа привычек.
 
 ## Технологический стек
 
-| Компонент       | Технология / Версия                                   | Назначение                    |
-|-----------------| ----------------------------------------------------- | ----------------------------- |
-| Язык            | Go 1.25                                               | Основной язык реализации      |
+| Компонент       | Технология / Версия                                | Назначение                    |
+|-----------------|----------------------------------------------------| ----------------------------- |
+| Язык            | Go 1.25                                            | Основной язык реализации      |
 | Telegram API    | [go-telegram/bot](https://github.com/go-telegram/bot) | Работа с Telegram Bot API     |
-| База данных     | PostgreSQL 17                                         | Хранение данных привычек      |
-| Драйвер         | [pgx](https://github.com/jackc/pgx)                   | Соединение с PostgreSQL       |
-| Миграции        | [Goose](https://github.com/pressly/goose)             | Управление схемой БД          |
-| Логирование     | [Zap](https://github.com/uber-go/zap)                 | Структурированное логирование |
-| Контейнеризация | Docker, Docker Compose                                | Оркестрация сервисов          |
-| Автоматизация   | ansible | Deploy |
+| База данных     | PostgreSQL 17                                      | Хранение данных привычек      |
+| Драйвер         | [pgx](https://github.com/jackc/pgx)                | Соединение с PostgreSQL       |
+| Миграции        | [Goose](https://github.com/pressly/goose)          | Управление схемой БД          |
+| Логирование     | [Zap](https://github.com/uber-go/zap)              | Структурированное логирование |
+| Контейнеризация | Docker, Docker Compose                             | Оркестрация сервисов          |
+| Автоматизация   | ansible 2.16                                       | Deploy |
 
 ---
 
@@ -89,10 +89,7 @@ bot_playbook/
 
 ```bash
   ansible-vault encrypt bot_playbook/group_vars/vars.yml  \
-  --vault-password-file bot_playbook/.vault_pass.txt
 ```
-
-
 
 ### Настройка подключения к удалённому серверу
 
@@ -107,8 +104,7 @@ bot_playbook/
 ### Деплой приложения вручную
 
 ```bash
-  ansible-playbook -i inventories/bot.ini deploy.yml \
-  --vault-password-file bot_playbook/.vault_pass.txt
+  ansible-playbook -i inventories/bot.ini deploy.yml 
 ```
 
 
