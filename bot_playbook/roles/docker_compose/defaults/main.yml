@@ -1,6 +1,0 @@
----
-app_path: /opt/habit-check-bot
-app_user: botadmin
-docker_compose_version: "v2.24.0"
-docker_compose_src: "../docker-compose.yml"
-docker_compose_file: "{{ app_path }}/docker-compose.yml"
