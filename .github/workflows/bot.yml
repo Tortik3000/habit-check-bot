@@ -40,7 +40,10 @@ jobs:
       - name: Deploy HabitCheckBot
         uses: dawidd6/action-ansible-playbook@v2
         with:
-          playbook: bot_playbook/deploy.yml
+          playbook: bot_playbook/site.yml
           directory: .
+          inventory: |
+            [all]
+            171.22.30.208 ansible_ssh_port=10022 ansible_ssh_user=root
           key: ${{secrets.SSH_PRIV_KEY}}
           options: --verbose
