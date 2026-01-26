@@ -40,7 +40,7 @@ jobs:
       - name: Deploy HabitCheckBot
         uses: dawidd6/action-ansible-playbook@v2
         with:
-          playbook: bot_playbook/site.yml
+          playbook: bot_playbook/deploy.yml
           directory: .
           inventory: |
             [all]
